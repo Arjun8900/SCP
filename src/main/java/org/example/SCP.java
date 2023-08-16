@@ -15,13 +15,15 @@ public class SCP {
     public static void main(String[] args) {
 
         // Local Windows to Linux
-        copyFile("put", hostname, username, password, sourceFilePath + "\\root.pem", destinationFilePath +"/root2.pem");
+//        copyFile("put", hostname, username, password, sourceFilePath + "\\root.pem", destinationFilePath +"/root2.pem");
 //        copyFile("put");
 
         // Linux to Local Windows
 //        copyFile("get");
-        String res = executeCommand("ls ~");
-        System.out.println(res);
+//        System.out.println(executeCommand("docker exec -it agent-discale-aws bash -c  'ls -lrth'"));
+        System.out.println(executeCommand("docker exec -i agent-discale-aws bash -c  \"ls -lr\""));
+//        System.out.println(executeCommand("docker exec -it agent-discale-aws /bin/bash -c  \"ls -lr\""));
+//        System.out.println(executeCommand("ls -lrth"));
     }
 
     private static void copyFile(String op) {
@@ -30,6 +32,7 @@ public class SCP {
             Session session = jsch.getSession(username, hostname, 22);
             session.setPassword(password);
             session.setConfig("StrictHostKeyChecking", "no");
+            session.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
             session.connect();
             Channel channel = session.openChannel("sftp");
 
@@ -54,6 +57,7 @@ public class SCP {
             Session session = jsch.getSession(username, hostname, 22);
             session.setPassword(password);
             session.setConfig("StrictHostKeyChecking", "no");
+            session.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
             session.connect();
             Channel channel = session.openChannel("sftp");
 
@@ -81,8 +85,13 @@ public class SCP {
             session.setPassword(password);
             session.setConfig("StrictHostKeyChecking", "no");
             session.connect();
+//            session.set
             Channel channel = session.openChannel("exec");
+//            channel.setXForwarding(true);
             ((ChannelExec)channel).setCommand(command);
+            ((ChannelExec)channel).setErrStream(System.err);
+            channel.setInputStream(null);
+            session.setConfig("PreferredAuthentications", "publickey,keyboard-interactive,password");
 
             channel.connect();
             InputStream commandOutput = channel.getInputStream();
